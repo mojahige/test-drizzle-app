@@ -1,12 +1,9 @@
-import { cache } from "react";
-import { db } from "@/db";
-
-export const getUsers = cache(async () => {
-  return db.query.users.findMany();
-});
+import Link from "next/link";
 
 export default async function Home() {
-  const users = await getUsers();
-
-  return <main>{users.length ? <p>あるよ</p> : <p>ないよ</p>}</main>;
+  return (
+    <main>
+      <Link href="/users">Users</Link>
+    </main>
+  );
 }
