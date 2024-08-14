@@ -11,8 +11,21 @@ export default async function Home() {
 
   return (
     <main>
-      {users.length ? <p>あるよ</p> : <p>ないよ</p>}
-      <Form />
+      <h1>Users</h1>
+      {users.length ? (
+        <ul>
+          {users.map((user) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>ないよ</p>
+      )}
+
+      <section>
+        <h2>Create user</h2>
+        <Form />
+      </section>
     </main>
   );
 }

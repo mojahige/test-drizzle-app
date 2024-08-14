@@ -1,8 +1,11 @@
 "use client";
 
-import { ComponentPropsWithoutRef, PropsWithChildren, useId } from "react";
-import { useFormState } from "react-dom";
+import { ComponentPropsWithoutRef, PropsWithChildren } from "react";
 import { createUser } from "./create-user";
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod";
+import { useFormState } from "react-dom";
+import { createUserSchema } from "./schema";
 
 function FormItem({ children }: PropsWithChildren) {
   return <div className="grid grid-rows-auto gap-y-1">{children}</div>;
@@ -13,24 +16,42 @@ function Input(props: ComponentPropsWithoutRef<"input">) {
 }
 
 export function Form() {
-  const nameId = useId();
-  const emailId = useId();
-  const [_, dispatch] = useFormState(createUser, { name: "", email: "" });
+  const [lastResult, action] = useFormState(createUser, undefined);
+  const [form, fields] = useForm({
+    // Sync the result of last submission
+    lastResult,
+
+    defaultValue: {
+      name: "",
+      email: "",
+    },
+
+    // Reuse the validation logic on the client
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: createUserSchema });
+    },
+
+    // Validate the form on blur event triggered
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+  });
 
   return (
-    <form action={dispatch}>
+    <form action={action} {...getFormProps(form)}>
       <div className="grid grid-rows-auto gap-y-6">
         <FormItem>
-          <label htmlFor={nameId}>Name</label>
-          <Input id={nameId} type="text" name="name" />
+          <label htmlFor={fields.name.id}>Name</label>
+          <Input {...getInputProps(fields.name, { type: "text" })} />
+          <div>{fields.name.errors}</div>
         </FormItem>
 
         <FormItem>
-          <label htmlFor={emailId}>Email</label>
-          <Input id={emailId} type="text" name="email" />
+          <label htmlFor={fields.email.id}>Email</label>
+          <Input {...getInputProps(fields.email, { type: "email" })} />
+          <div>{fields.email.errors}</div>
         </FormItem>
 
-        <button type="submit" name="action">
+        <button type="submit" name="action" disabled={!form.valid}>
           Submit
         </button>
       </div>

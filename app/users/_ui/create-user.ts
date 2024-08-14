@@ -1,30 +1,38 @@
 "use server";
 
-import { InsertUser } from "@/db/schema";
+import { parseWithZod } from "@conform-to/zod";
+import { createUserSchema } from "./schema";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { revalidatePath } from "next/cache";
 
-type State = Pick<InsertUser, "name" | "email">;
+export async function createUser(_prevState: unknown, formData: FormData) {
+  const submission = parseWithZod(formData, {
+    schema: createUserSchema,
+  });
 
-export async function createUser(state: State, formDate: FormData) {
-  const name = formDate.get("name")?.toString();
-  const email = formDate.get("email")?.toString();
-
-  switch (true) {
-    case !!name && !!email:
-      return {
-        name,
-        email,
-      };
-    case !!name:
-      return {
-        ...state,
-        name,
-      };
-    case !!email:
-      return {
-        ...state,
-        email,
-      };
-    default:
-      return state;
+  if (submission.status !== "success") {
+    return submission.reply();
   }
+
+  try {
+    // unique チェックが必要そう
+    await db.insert(users).values({
+      name: submission.value.name,
+      email: submission.value.email,
+    });
+  } catch (error) {
+    console.log(error);
+    return submission.reply({
+      fieldErrors: {
+        email: ["あかんよ"],
+      },
+    });
+  }
+
+  revalidatePath("/users");
+
+  return submission.reply({
+    resetForm: true,
+  });
 }
