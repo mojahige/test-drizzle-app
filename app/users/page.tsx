@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { db } from "@/db";
-import { Form } from "./_ui/form";
+import { CreateUserForm } from "./_ui/create-user-form";
 
 const getUsers = cache(async () => {
   return db.query.users.findMany();
@@ -24,7 +24,7 @@ export default async function Home() {
 
       <section>
         <h2>Create user</h2>
-        <Form />
+        <CreateUserForm />
       </section>
     </main>
   );

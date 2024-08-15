@@ -12,22 +12,28 @@ export async function createUser(_prevState: unknown, formData: FormData) {
   });
 
   if (submission.status !== "success") {
-    return submission.reply();
+    const errors = Object.entries(submission.error ?? {}).reduce(
+      (accumulator, [key, value]) =>
+        value !== null ? { ...accumulator, [key]: value } : accumulator,
+      {},
+    );
+
+    return submission.reply({
+      fieldErrors: errors,
+    });
   }
 
   try {
-    // unique チェックが必要そう
     await db.insert(users).values({
       name: submission.value.name,
       email: submission.value.email,
     });
-  } catch (error) {
-    console.log(error);
-    return submission.reply({
-      fieldErrors: {
-        email: ["あかんよ"],
-      },
-    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return submission.reply({
+        formErrors: [error.message],
+      });
+    }
   }
 
   revalidatePath("/users");
