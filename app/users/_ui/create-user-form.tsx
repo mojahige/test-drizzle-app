@@ -50,10 +50,18 @@ export function CreateUserForm() {
           name={fields.name.name}
           isRequired={fields.name.required}
           defaultValue={fields.name.initialValue}
+          isInvalid={!fields.name.valid}
+          key={fields.name.key}
         >
           <Label>Name</Label>
-          <Input type="text" />
-          <FieldError />
+          <Input type="text" className="text-black" />
+          <FieldError>
+            <ul>
+              {fields.name.errors?.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </FieldError>
         </TextField>
 
         <TextField
@@ -61,10 +69,19 @@ export function CreateUserForm() {
           name={fields.email.name}
           defaultValue={fields.email.initialValue}
           isRequired={fields.email.required}
+          isInvalid={!fields.email.valid}
+          key={fields.email.key}
         >
           <Label>Email</Label>
-          <Input type="email" />
+          <Input type="email" className="text-black" />
           <FieldError />
+          <FieldError>
+            <ul>
+              {fields.email.errors?.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </FieldError>
         </TextField>
 
         {form.errors && <div id={form.errorId}>{[...form.errors]}</div>}
